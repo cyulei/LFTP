@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class slicer {
 	public slicerBuffer senderBuffer;
-	
+
 	
 	int count=-1;
 	int len=1000;
@@ -28,7 +28,7 @@ public class slicer {
 		try {
 		//	System.out.println(buffer[2]);
 			len=in.read(buffer);
-			System.out.println(len);
+		//	System.out.println(len);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -42,6 +42,7 @@ public class slicer {
 	}
 	public byte[] getPack(int seq) {//输入标号,返回一个含有标号的包
 		byte[] temp;
+		
 		if(seq==count+1) {//是还没有读入的包
 			byte[] readed=readFileByBytes();
 			/*byte[] length=intToByteArray(len);
@@ -53,7 +54,7 @@ public class slicer {
 		}else {//是已经读过，理论上还在缓冲中的包
 			temp=senderBuffer.GetPacket(seq);
 		}
-
+		System.out.println("当前发送端缓冲区大小"+senderBuffer.sendMap.size());
 		//System.out.print(temp.length);
 
 		return temp;

@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
 import java.util.concurrent.Executors;
 
 public class TCPSender {
@@ -72,36 +73,23 @@ public class TCPSender {
 		}
 	}
 	public void StartSendData() {
-		while(oneslicer.IsEnd()==false) {
+		while(oneslicer.IsEnd()==false||(oneslicer.IsEnd()==true&&ACKedSEQ!=oneslicer.count)) {
 			System.out.print("");
 			if(isSendComplete) {
-				isSendComplete=false;
-		        if((lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > congWin || (lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > receWindow)
-		        {
-	            	executor.submit(new Runnable(){public void run(){
-		        		SendData(null);
-		        		isSendComplete = true;
-	        		}});
-		        }
-		        else
-		        {
-					byte[] datapack=oneslicer.getPack(currentSEQ+1);
-					System.out.println("currentSEQ:"+(currentSEQ+1));
-					currentSEQ=Formatter.getSEQ(datapack);
-	            	executor.submit(new Runnable(){public void run(){
+				isSendComplete=false;		
+            	executor.submit(new Runnable(){public void run(){
 
-	            		/*
-		        		try {
-							//1毫秒发送一个数据包
-		    				Thread.sleep(1);
-		    			} catch (InterruptedException e) {
-		    				e.printStackTrace();
-		    			}
-						*/
-		        		SendData(datapack);
-		        		isSendComplete = true;
-	        		}});	
-		        }
+            		
+	        		try {
+						//1毫秒发送一个数据包
+	    				Thread.sleep(1);
+	    			} catch (InterruptedException e) {
+	    				e.printStackTrace();
+	    			}
+					
+	        		SendData();
+	        		isSendComplete = true;
+        		}});
 			}
     		if(isReceiveComplete)
     		{
@@ -122,28 +110,7 @@ public class TCPSender {
 		}
 		oneslicerIsEnd = true;
 		EndSEQ = currentSEQ;
-		while(!isComplete)
-		{
-			//等待最后一个包被接收到
-			System.out.print("");
-    		if(clock.isOverTime)
-    		{
-    			WriteLog("发送超时!!");
-    			//tcp超时重传
-    			Timeout();
-    		}
-    		
-    		if(isReceiveComplete)
-    		{
-    			isReceiveComplete = false;
-
-    			executor.submit(new Runnable(){public void run(){
-    				ReceiveACK();
-    				isReceiveComplete=true;
-    				}});
-    			
-    		}
-		}
+	
 	}
 	public void Timeout()
 	{
@@ -176,30 +143,18 @@ public class TCPSender {
 	//重新传一个序号的包的函数
 	private void RetransMission()
 	{
-		try
-		{
-			 
-			//从缓冲池中取出序号为SendBase/realDataLength，因为这里SendBase是代表第几个字节的包，赋值给data_haveseq
-			int tempSEQ = ACKedSEQ;
-			lastTimeoutSEQ = ACKedSEQ;
-			byte[] data_haveseq = oneslicer.getPack(ACKedSEQ);
-			//将报文发送到指定目的地
-	        InetAddress add = InetAddress.getByName(netAddress);
-	        DatagramPacket datagramPacket = new DatagramPacket(data_haveseq, data_haveseq.length, add, PORT);
-	        datagramSocket.send(datagramPacket);	
-	        //回退n步
-			currentSEQ=tempSEQ;
-		}
-		catch (UnknownHostException e) 
-		{
-            e.printStackTrace();
-        }  
-		catch (IOException e) 
-		{
-            e.printStackTrace();
-        } 	
+		//从缓冲池中取出序号为SendBase/realDataLength，因为这里SendBase是代表第几个字节的包，赋值给data_haveseq
+		int tempSEQ = ACKedSEQ-1;
+		lastTimeoutSEQ = ACKedSEQ;
+//		byte[] data_haveseq = oneslicer.getPack(ACKedSEQ);
+		//将报文发送到指定目的地
+ //       InetAddress add = InetAddress.getByName(netAddress);
+ //       DatagramPacket datagramPacket = new DatagramPacket(data_haveseq, data_haveseq.length, add, PORT);
+ //       datagramSocket.send(datagramPacket);	
+		//回退n步
+		currentSEQ=tempSEQ; 	
 	}
-	public void SendData(byte[] data_original) {
+	public void SendData() {
 		System.out.println("拥塞大小为:"+congWin);
 		//System.out.println("字节相差"+((lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK));
         if((lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > congWin || (lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > receWindow)
@@ -218,6 +173,9 @@ public class TCPSender {
         }
         else
         {
+			byte[] datapack=oneslicer.getPack(currentSEQ+1);
+			//System.out.println("currentSEQ:"+(currentSEQ+1));
+			currentSEQ=Formatter.getSEQ(datapack);
     		if(timerStart==0) {
     			try {
     				clock.StartClock(timeoutInterval);
@@ -228,9 +186,9 @@ public class TCPSender {
     		}
     		try {
     			InetAddress add = InetAddress.getByName(netAddress);
-    			DatagramPacket datagramPacket = new DatagramPacket(data_original, data_original.length, add, PORT);
+    			DatagramPacket datagramPacket = new DatagramPacket(datapack, datapack.length, add, PORT);
     	        datagramSocket.send(datagramPacket);
-    	        int sendSEQ = Formatter.getSEQ(data_original);
+    	        int sendSEQ = Formatter.getSEQ(datapack);
     	        WriteLog("send a message is SEQ:" + sendSEQ);
     		}
     		catch (UnknownHostException e) 

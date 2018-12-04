@@ -27,6 +27,10 @@
 ```
 
 ### 项目执行
+- 使用Eclipse 
+
+将src文件夹下的文件添加到自己的java项目中，然后导入外部包commons-cli-1.4.jar，执行LFTPServer开启服务器，将本地作为服务器地址，执行LFTPClient开启客户端，客户端在执行时候需要添加参数 
+
 - 开启服务端
 >java LFTPSever
 
