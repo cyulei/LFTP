@@ -50,3 +50,12 @@ usage: Show how to use cli.
                      output.txt
  -s,--server <arg>   Input the server ip address.For example: 127.0.0.1
 ```
+
+- log文件
+在项目运行的时候会生成
+
+```
+1. TCPReceiverLog.txt   接收方运行的时候log信息
+2. TCPSenderLog.txt     发送方运行的时候log信息
+3. UDPClientLog.txt     客户端运行时候的log信息
+```
