@@ -76,12 +76,7 @@ public class TCPSender {
 		while(oneslicer.IsEnd()==false||(oneslicer.IsEnd()==true&&ACKedSEQ!=oneslicer.count)) {
 			System.out.print("");
 			if(isSendComplete) {
-				isSendComplete=false;
-				byte[] datapack=oneslicer.getPack(currentSEQ+1);
-				//System.out.println("currentSEQ:"+(currentSEQ+1));
-				currentSEQ=Formatter.getSEQ(datapack);
-				
-				
+				isSendComplete=false;		
             	executor.submit(new Runnable(){public void run(){
 
             		/*
@@ -92,7 +87,7 @@ public class TCPSender {
 	    				e.printStackTrace();
 	    			}
 					*/
-	        		SendData(datapack);
+	        		SendData();
 	        		isSendComplete = true;
         		}});
 			}
@@ -159,7 +154,7 @@ public class TCPSender {
 		//回退n步
 		currentSEQ=tempSEQ; 	
 	}
-	public void SendData(byte[] data_original) {
+	public void SendData() {
 		System.out.println("拥塞大小为:"+congWin);
 		//System.out.println("字节相差"+((lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK));
         if((lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > congWin || (lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > receWindow)
@@ -178,6 +173,9 @@ public class TCPSender {
         }
         else
         {
+			byte[] datapack=oneslicer.getPack(currentSEQ+1);
+			//System.out.println("currentSEQ:"+(currentSEQ+1));
+			currentSEQ=Formatter.getSEQ(datapack);
     		if(timerStart==0) {
     			try {
     				clock.StartClock(timeoutInterval);
@@ -188,9 +186,9 @@ public class TCPSender {
     		}
     		try {
     			InetAddress add = InetAddress.getByName(netAddress);
-    			DatagramPacket datagramPacket = new DatagramPacket(data_original, data_original.length, add, PORT);
+    			DatagramPacket datagramPacket = new DatagramPacket(datapack, datapack.length, add, PORT);
     	        datagramSocket.send(datagramPacket);
-    	        int sendSEQ = Formatter.getSEQ(data_original);
+    	        int sendSEQ = Formatter.getSEQ(datapack);
     	        WriteLog("send a message is SEQ:" + sendSEQ);
     		}
     		catch (UnknownHostException e) 
