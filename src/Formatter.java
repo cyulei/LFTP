@@ -61,7 +61,7 @@ public class Formatter {//��������������ĵĸ�ʽ
 	}
 	public static int byteArrayToInt(byte[] src, int offset) {  //��byte����ת��int
 	    int value;    
-	    System.out.println(src.length);
+	    //System.out.println(src.length);
 	    value = (int) ((src[offset+3] & 0xFF)   
 	            | ((src[offset+2] & 0xFF)<<8)   
 	            | ((src[offset+1] & 0xFF)<<16)   

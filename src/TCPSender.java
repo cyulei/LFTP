@@ -79,14 +79,14 @@ public class TCPSender {
 				isSendComplete=false;		
             	executor.submit(new Runnable(){public void run(){
 
-            		/*
+            		
 	        		try {
 						//1毫秒发送一个数据包
 	    				Thread.sleep(1);
 	    			} catch (InterruptedException e) {
 	    				e.printStackTrace();
 	    			}
-					*/
+					
 	        		SendData();
 	        		isSendComplete = true;
         		}});

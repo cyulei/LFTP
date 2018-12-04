@@ -80,7 +80,7 @@ public class TCPReceiver {
 	}
 	private byte[] SetAckPackage(int acknumber)
 	{
-		byte[] fill=new byte[1000];
+		byte[] fill=new byte[1];
 		byte[] ack=Formatter.getFormat(acknumber, 0, 0, 0, receWindow, 0, 0, 0, fill) ;
 		System.out.println("接收窗口大小为:"+receWindow);
 		return ack;
