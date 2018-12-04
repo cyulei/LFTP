@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
 import java.util.concurrent.Executors;
 
 public class TCPSender {
@@ -72,7 +73,7 @@ public class TCPSender {
 		}
 	}
 	public void StartSendData() {
-		while(oneslicer.IsEnd()==false) {
+		while(oneslicer.IsEnd()==false||(oneslicer.IsEnd()==true&&ACKedSEQ!=oneslicer.count)) {
 			System.out.print("");
 			if(isSendComplete) {
 				isSendComplete=false;
@@ -114,28 +115,7 @@ public class TCPSender {
 		}
 		oneslicerIsEnd = true;
 		EndSEQ = currentSEQ;
-		while(!isComplete)
-		{
-			//等待最后一个包被接收到
-			System.out.print("");
-    		if(clock.isOverTime)
-    		{
-    			WriteLog("发送超时!!");
-    			//tcp超时重传
-    			Timeout();
-    		}
-    		
-    		if(isReceiveComplete)
-    		{
-    			isReceiveComplete = false;
-
-    			executor.submit(new Runnable(){public void run(){
-    				ReceiveACK();
-    				isReceiveComplete=true;
-    				}});
-    			
-    		}
-		}
+	
 	}
 	public void Timeout()
 	{
@@ -168,28 +148,16 @@ public class TCPSender {
 	//重新传一个序号的包的函数
 	private void RetransMission()
 	{
-		try
-		{
-			 
-			//从缓冲池中取出序号为SendBase/realDataLength，因为这里SendBase是代表第几个字节的包，赋值给data_haveseq
-			int tempSEQ = ACKedSEQ;
-			lastTimeoutSEQ = ACKedSEQ;
-			byte[] data_haveseq = oneslicer.getPack(ACKedSEQ);
-			//将报文发送到指定目的地
-	        InetAddress add = InetAddress.getByName(netAddress);
-	        DatagramPacket datagramPacket = new DatagramPacket(data_haveseq, data_haveseq.length, add, PORT);
-	        datagramSocket.send(datagramPacket);	
-	        //回退n步
-			currentSEQ=tempSEQ;
-		}
-		catch (UnknownHostException e) 
-		{
-            e.printStackTrace();
-        }  
-		catch (IOException e) 
-		{
-            e.printStackTrace();
-        } 	
+		//从缓冲池中取出序号为SendBase/realDataLength，因为这里SendBase是代表第几个字节的包，赋值给data_haveseq
+		int tempSEQ = ACKedSEQ-1;
+		lastTimeoutSEQ = ACKedSEQ;
+//		byte[] data_haveseq = oneslicer.getPack(ACKedSEQ);
+		//将报文发送到指定目的地
+ //       InetAddress add = InetAddress.getByName(netAddress);
+ //       DatagramPacket datagramPacket = new DatagramPacket(data_haveseq, data_haveseq.length, add, PORT);
+ //       datagramSocket.send(datagramPacket);	
+		//回退n步
+		currentSEQ=tempSEQ; 	
 	}
 	public void SendData(byte[] data_original) {
 		System.out.println("拥塞大小为:"+congWin);

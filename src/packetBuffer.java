@@ -52,7 +52,7 @@ public class packetBuffer {
 		if(receiveQueue.size()==0)return-1;
 		
 		int temp=Formatter.getSEQ(getPacket());// byteArrayToInt(getPacket(),0);
-		System.out.println("当前顶部SEQ"+temp);
+		System.out.println("当前顶部SEQ"+temp+"当前接受方缓冲区大小"+receiveQueue.size());
 		return temp;
 	}
 
