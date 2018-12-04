@@ -76,24 +76,32 @@ public class TCPSender {
 			System.out.print("");
 			if(isSendComplete) {
 				isSendComplete=false;
-				byte[] datapack=oneslicer.getPack(currentSEQ+1);
-				//System.out.println("currentSEQ:"+(currentSEQ+1));
-				currentSEQ=Formatter.getSEQ(datapack);
-				
-				
-            	executor.submit(new Runnable(){public void run(){
+		        if((lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > congWin || (lastByteSent-lastByteAcked)*MAX_RECEIVE_ACK > receWindow)
+		        {
+	            	executor.submit(new Runnable(){public void run(){
+		        		SendData(null);
+		        		isSendComplete = true;
+	        		}});
+		        }
+		        else
+		        {
+					byte[] datapack=oneslicer.getPack(currentSEQ+1);
+					System.out.println("currentSEQ:"+(currentSEQ+1));
+					currentSEQ=Formatter.getSEQ(datapack);
+	            	executor.submit(new Runnable(){public void run(){
 
-            		/*
-	        		try {
-						//1毫秒发送一个数据包
-	    				Thread.sleep(1);
-	    			} catch (InterruptedException e) {
-	    				e.printStackTrace();
-	    			}
-					*/
-	        		SendData(datapack);
-	        		isSendComplete = true;
-        		}});
+	            		/*
+		        		try {
+							//1毫秒发送一个数据包
+		    				Thread.sleep(1);
+		    			} catch (InterruptedException e) {
+		    				e.printStackTrace();
+		    			}
+						*/
+		        		SendData(datapack);
+		        		isSendComplete = true;
+	        		}});	
+		        }
 			}
     		if(isReceiveComplete)
     		{
